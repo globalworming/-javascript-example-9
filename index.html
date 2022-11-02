@@ -2,169 +2,175 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Async</title>
+    <title>DOM</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
 </head>
-<body onload="runScript(); RunTest.test1()">
-<h1>Asynchronous Javascript</h1>
-sometimes things take time and we need to do something meaningful in the meantime e.g. display a url while we have a long running process where we fetch alternative urls. we can simulate waiting with "setTimeout"
+<body>
+<h1>Document Object Model (DOM)</h1>
+Using Javascript with browsers, you will most likely interact with the DOM. The DOM is a representation of what's displayed in a browser.
 <pre>
 <code class="language-javascript">
-    const appUrl = "app.example.com"
-    let alternativeAppUrl = undefined
-
-    // query alternative url and display it as soon as it is availiable
-    setTimeout(() => {
-        alternativeAppUrl = "alt.example.com"
-        console.log(alternativeAppUrl);
-    }, 5000);
-    console.log(appUrl)
-
-    // -> app.example.com
-    // -> alt.example.com
+    html
+    ├─ head
+    │  ├─ title
+    │  ├─ link
+    ├─ body
+    │  ├─ h1
+    │  ├─ span
+    │  ├─ div
 </code>
 </pre>
-instead of waiting for the result, we continue execution but pass a "callback function" to execute when the result is ready
+The DOM is a tree structure with "html" at it's root. It has two "children" elements or nodes. You can get children by index or by using "nextElementSibling" or "previousElementSibling" methods.
 <pre>
 <code class="language-javascript">
-    let log = (it) => {
-        console.log(it);
-    };
-    const functionWithDelayedResult = (callback) => {
-        setTimeout(() => callback("delayed result"), 1000);
-        log("function done")
-    }
-    console.log("execute function immediately and call callback later")
-    functionWithDelayedResult(log)
-
-    // -> execute function immediately and call callback later
-    // -> function done
-    // -> delayed result
+    const html = document.children[0]
+    // -> &lt;html&gt;...&lt;/html&gt;
+    html.children
+    // -> HTMLCollection(2) [head, body]
 </code>
 </pre>
-Now if we want to chain multiple things that take time, we get an error
+Regarding nodes vs elements: every item in the DOM is a node. elements are special nodes that have common properties. e.g.
+a "&lt;div class="app"&gt;hi&lt;/div&gt;" is an element that has an attribute node representing the class name.
+
 <pre>
 <code class="language-javascript">
-    const bakeCake = (callback) => {
-        // how to pass the callback?
-        mixIngredients(bake)
-    }
-
-    const mixIngredients = (callback) => {
-        callback()
-    }
-
-    const bake = (callback) => {
-        callback()
-    }
-
-    const doneBaking = () => {
-        console.log("done baking");
-    };
-
-    bakeCake(doneBaking)
-
-    // -> TypeError: callback is not a function
+    html
+    ├─ ...
+    ├─ body
+    │  ├─ div
+    │  │  ├─ attribute (name="class", value="app")
+    │  │  ├─ text(textContent="hi")
 </code>
 </pre>
-instead of dealing with callbacks, we create Promises, which are objects that may hold results in the future. we pass a function that when finished should call the "resolve" callback
+
+<h2>parent/child/sibling</h2>
 <pre>
 <code class="language-javascript">
-    new Promise((resolve) => {
-        setTimeout(() => {
-            console.log("resolved")
-            resolve("done");
-        }, 1000)
-        console.log("resolving...")
-    })
-
-    // -> resolving...
-    // -> resolved
+    html
+    ├─ head
+    │  ├─  ...
+    ├─ body
+    │  ├─ ...
+    │  ├─ div
+    │  │  ├─ ul
+    │  │  │  ├─ li
+    │  │  │  ├─ li
+    │  │  │  ├─ li
+    │  │  ├─ ol
+    │  │  │  ├─ li
+    │  │  │  ├─ li
+    │  │  │  ├─ li
 </code>
 </pre>
-and these make it easier to create chains because of the "then" method.
-<pre>
-<code class="language-javascript">
-     const mixIngredients = (callback) => {
-        console.log("mixing");
-        callback("mix")
-    }
-
-    const bake = (mixedIngredients) => {
-        console.log("baking " + mixedIngredients);
-        return "cake"
-    }
-
-    const doneBaking = (cake) => {
-        console.log("done baking " + cake);
-    };
-
-    const bakeCake = (callback) => {
-        new Promise((resolve) => mixIngredients(resolve))
-            .then(mix => bake(mix))
-            .then(cake => callback(cake))
-    }
-
-    bakeCake(doneBaking)
-
-    // -> mixing
-    // -> baking mix
-    // -> done baking cake
-</code>
-</pre>
-what we dont see is that the "then" method is actually creating a new promise that may resolve a value.
-
-
-<h3>Your Task: harvest some strawberries</h3>
-<span>edit the script block of this file to check off all the steps involved</span><br>
-<h2>How to harvest:</h2>
-<div>
-    <ul>
-        <li><span id="plant"></span> plant strawberries</li>
-        <li><span id="water"></span> water them</li>
-        <li><span id="wait"></span> wait a few months</li>
-        <li><span id="harvest"></span> harvest</li>
-    </ul>
+selected: <span id="element"></span>
+<div id="root" class="selected">
+        <ul>
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+        </ul>
+        <ol>
+            <li>one</li>
+            <li>two</li>
+            <li>three</li>
+        </ol>
 </div>
-<pre class="jserror"></pre>
-<pre class="error"></pre>
+<button onclick="selectParent()">parent</button>
+<button onclick="selectChild()">first child</button>
+<button onclick="selectNext()">nextSibling</button>
+<button onclick="selectPrevious()">previousSibling</button>
+<script type="text/javascript">
+    const getSelected = () => document.getElementsByClassName("selected")[0];
 
-<script type="application/javascript">
-
-    class Strawberries {
-        plant() { checkOff("plant")}
-        water() { checkOff("water")}
-        wait() { checkOff("wait")}
-        harvest() { checkOff("harvest")}
+    setInterval(() => {
+        let selected = getSelected();
+        document.getElementById("element").textContent = selected.nodeName
+    } , 200)
+    const selectParent = () => {
+        let selected = getSelected();
+        if (selected.id === "root") return
+        selected.className = ""
+        selected.parentNode.className = "selected"
     }
-
-    function plantStrawberries(callback) {
-        const strawberries = new Strawberries();
-        strawberries.plant()
-        callback(strawberries)
+    const selectChild = () => {
+        let selected = getSelected();
+        if (selected.children.length === 0) return
+        selected.className = ""
+        selected.firstElementChild.className = "selected"
     }
-
-    const runScript = () => {
-        try {
-            new Promise(plantStrawberries)
-                .then(strawberries => {
-                    strawberries.wait();
-                    return strawberries
-                })
-                .then(strawberries => strawberries.harvest())
-
-        } catch (e) {
-            document.getElementsByClassName("jserror")[0].textContent = e.message + "\n\n" + e.stack
-        }
-    };
-
-    const checkOff = (id) => document.getElementById(id).append("✅")
+    const selectNext = () => {
+        let selected = getSelected();
+        if (selected.id === "root") return
+        if (!selected.nextElementSibling) return
+        selected.className = ""
+        selected.nextElementSibling.className = "selected"
+    }
+    const selectPrevious = () => {
+        let selected = getSelected();
+        if (selected.id === "root") return
+        if (!selected.previousElementSibling) return
+        selected.className = ""
+        selected.previousElementSibling.className = "selected"
+    }
 </script>
-<script src="test.js"></script>
+<h2>render state</h2>
+single page applications leverage the DOM API to create intricate applications. A naive approach is to just render a state (create DOM elements) and rerender when something changes
+<h3>Database App</h3>
+<pre>
+<code class="language-javascript">
+    const state = {
+        heroes: ["lightning", "thunder"],
+        villains: ["fire", "brimstone"],
+        tab: "heroes"
+    }
 
+    const app = {
+        render() {
+            let e = document.getElementById("app");
+            // remove all to start from a blank slate on rerender
+            [...e.children].forEach(child => child.remove())
+            // build the switch button
+            const tabSwitch = document.createElement("button")
+            tabSwitch.textContent = state.tab
+            tabSwitch.onclick = function (ev) {
+                state.tab = state.tab === "heroes" ? "villains" : "heroes"
+                app.render()
+            }
+            // build the person list
+            const list = document.createElement("ol");
+            let persons = state.tab === "heroes" ? state.heroes : state.villains;
+            persons.forEach(s => {
+                const listItem = document.createElement("li")
+                listItem.textContent = s
+                const deleteButton = document.createElement("button")
+                deleteButton.textContent = "❌"
+                deleteButton.onclick = () => {
+                    delete persons[persons.indexOf(s)]
+                    app.render()
+                }
+                listItem.append(deleteButton)
+                list.append(listItem)
+            })
+            // add all elements into the div
+            e.append(tabSwitch, list)
+        }
+    }
+
+    app.render()
+</code>
+</pre>
+<h3>rendered app</h3>
+<div id="app"></div>
+<script src="render.js"></script>
+this is a very basic approach. modern javascript frameworks have much more logic regarding when, what and how to render e.g. not re-rendering everything but only things that changed, building a "shadow DOM", using the "replaceChild" method....
+
+
+<h3>Your Task: build a ToDo App</h3>
+or any other kind of example application :) then hit the button below
+<button onclick="document.getElementById('displayOnSuccess').hidden = false">done</button>
 <div id="displayOnSuccess" hidden="hidden">
     <a href="./1.html">next</a>
 </div>
